@@ -1,108 +1,64 @@
-import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useState, useEffect } from 'react';
+import DailySchedule from './DailySchedule';
 
 const Home = () => {
   const [reminders, setReminders] = useState([]);
-  const [newReminder, setNewReminder] = useState('');
-  const [age, setAge] = useState('');
+  const [medicineName, setMedicineName] = useState('');
+  const [medicineTime, setMedicineTime] = useState('');
 
   const handleAddReminder = () => {
-    if (newReminder.trim() !== '') {
+    if (medicineName && medicineTime) {
+      const newReminder = {
+        id: new Date().getTime(),
+        name: medicineName,
+        time: medicineTime
+      };
       setReminders([...reminders, newReminder]);
-      setNewReminder('');
+      setMedicineName('');
+      setMedicineTime('');
     }
   };
 
-  const handleAgeChange = (e) => {
-    setAge(e.target.value);
-  };
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      reminders.forEach(reminder => {
+        if (reminder.time === currentTime) {
+          alert(`It's time to take ${reminder.name}!`);
+        }
+      });
+    }, 1000);
 
-  const agePrecautions = {
-    '50-70': [
-      'Regular exercise to maintain strength and flexibility',
-      'Eat a balanced diet rich in nutrients',
-      'Stay hydrated',
-      'Get enough sleep',
-      'Manage stress levels',
-    ],
-    // Add more age ranges and corresponding precautions if needed
-  };
-
-  const precautions = agePrecautions[age] || [];
+    return () => clearInterval(interval);
+  }, [reminders]);
 
   return (
     <div className="container mt-4">
-      <h2 className="text-center">Pill Reminder</h2>
+      <h2 className="text-center">Medicine Reminder</h2>
+      <div className="form-group">
+        <label htmlFor="medicineName">Medicine Name:</label>
+        <input type="text" className="form-control" id="medicineName" value={medicineName} onChange={(e) => setMedicineName(e.target.value)} />
+      </div>
+      <div className="form-group">
+        <label htmlFor="medicineTime">Medicine Time:</label>
+        <input type="time" className="form-control" id="medicineTime" value={medicineTime} onChange={(e) => setMedicineTime(e.target.value)} />
+      </div>
+      <button className="btn btn-primary" onClick={handleAddReminder}>Add Reminder</button>
 
-      {/* Reminder Form */}
-      <div className="card mb-4">
-        <div className="card-body">
-          <h5 className="card-title">Add Reminder</h5>
-          <div className="input-group mb-3">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Enter a reminder"
-              value={newReminder}
-              onChange={(e) => setNewReminder(e.target.value)}
-            />
-            <div className="input-group-append">
-              <button className="btn btn-primary" type="button" onClick={handleAddReminder}>
-                Add
-              </button>
-            </div>
-          </div>
+      {reminders.length > 0 && (
+        <div className="mt-4">
+          <h3>Reminders:</h3>
+          <ul className="list-group">
+            {reminders.map(reminder => (
+              <li key={reminder.id} className="list-group-item">
+                <span className="mr-2">{reminder.name}</span>
+                <span className="badge badge-primary">{reminder.time}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
-
-      {/* Reminder List */}
-      <div className="card mb-4">
-        <div className="card-body">
-          <h5 className="card-title">Reminders</h5>
-          {reminders.length > 0 ? (
-            <ul className="list-group">
-              {reminders.map((reminder, index) => (
-                <li className="list-group-item" key={index}>
-                  {reminder}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No reminders added.</p>
-          )}
-        </div>
-      </div>
-
-      {/* Age Precautions */}
-      <div className="card">
-        <div className="card-body">
-          <h5 className="card-title">Precautions for Age {age}</h5>
-          <div>
-            {precautions.length > 0 ? (
-              <ul>
-                {precautions.map((precaution, index) => (
-                  <li key={index}>{precaution}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>No precautions available for this age range.</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Age Input */}
-      <div className="mt-4">
-        <label htmlFor="ageInput">Enter Your Age:</label>
-        <input
-          type="number"
-          id="ageInput"
-          className="form-control"
-          value={age}
-          onChange={handleAgeChange}
-          placeholder="Age"
-        />
-      </div>
+      )}
+      <DailySchedule/>
     </div>
   );
 };
